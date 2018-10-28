@@ -2,10 +2,13 @@ import json
 import time
 from datetime import date
 
+from flask_cors import cross_origin
+
 from app import app
 
 
 @app.route('/update_practiced')
+@cross_origin('http://192.168.1.20:8080/')
 def update_practiced():
     songs = [
         {
