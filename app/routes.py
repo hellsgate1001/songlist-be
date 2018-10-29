@@ -1,55 +1,35 @@
+import os
 import json
 import time
 from datetime import date
 
-from flask_cors import cross_origin
-
+from flask import request
 from app import app
 
 
 @app.route('/update_practiced')
-@cross_origin('http://192.168.1.20:8080/')
 def update_practiced():
-    songs = [
-        {
-          'name': 'Blondie - Call Me',
-          'lastPracticed': time.mktime(date(2018,10,24).timetuple())
-        },
-        {
-          'name': 'Alice In Chains - Man In A Box',
-          'lastPracticed': time.mktime(date(2018,10,22).timetuple())
-        },
-        {
-          'name': 'Guns N Roses - Nightrain',
-          'lastPracticed': time.mktime(date(2018,10,21).timetuple())
-        },
-        {
-          'name': 'Heart - Barracuda',
-          'lastPracticed': time.mktime(date(2018,10,22).timetuple())
-        },
-        {
-          'name': 'Alter Bridge - Blackbird',
-          'lastPracticed': time.mktime(date(2018,10,21).timetuple())
-        },
-        {
-          'name': 'Green Day - Longview',
-          'lastPracticed': time.mktime(date(2018,10,20).timetuple())
-        },
-        {
-          'name': 'Foo Fighters - The Pretender',
-          'lastPracticed': time.mktime(date(2018,10,21).timetuple())
-        },
-        {
-          'name': 'Muse - Hysteria',
-          'lastPracticed': time.mktime(date(2018,10,21).timetuple())
-        },
-        {
-          'name': 'Black Stone Cherry - Blind Man',
-          'lastPracticed': time.mktime(date(2018,10,21).timetuple())
-        },
-        {
-          'name': 'Jane\'s Addiction - Been Caught Stealing',
-          'lastPracticed': time.mktime(date(2018,10,31).timetuple())
-        }
-      ]
-    return json.dumps(sorted(songs, key=lambda x: x['lastPracticed']))
+  songs = get_songlist()
+  return json.dumps(sorted(songs, key=lambda x: (x['lastPracticed'], x['name'])))
+
+
+@app.route('/add_song', methods=['POST'])
+def add_song():
+  songs = get_songlist()
+  new_song = {
+    'name': request.json['name'],
+    'lastPracticed': time.mktime(date.today().timetuple())
+  }
+  songs.append(new_song)
+  write_songlist(songs)
+  return json.dumps(sorted(songs, key=lambda x: (x['lastPracticed'], x['name'])))
+
+
+def get_songlist():
+  with open(os.path.join(os.path.dirname(__file__), 'songlist.json'), 'r') as f:
+    return json.load(f)
+
+
+def write_songlist(songs):
+  with open(os.path.join(os.path.dirname(__file__), 'songlist.json'), 'w') as f:
+    json.dump(songs, f)
