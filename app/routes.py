@@ -17,14 +17,10 @@ def get_songs():
 
 @app.route('/add_song', methods=['POST'])
 def add_song():
-  songs = get_songlist()
-  new_song = {
-    'name': request.json['name'],
-    'lastPracticed': time.mktime(date.today().timetuple())
-  }
-  songs.append(new_song)
-  write_songlist(songs)
-  return json.dumps(sorted(songs, key=lambda x: (x['lastPracticed'], x['name'])))
+  tolearn = get_tolearn()
+  tolearn.append(request.json['name'])
+  write_tolearn(tolearn)
+  return json.dumps(tolearn)
 
 
 @app.route('/set_practiced', methods=['POST'])
@@ -35,7 +31,7 @@ def set_practiced():
       song['lastPracticed'] = time.mktime(date.today().timetuple())
       break
   write_songlist(songs)
-  return json.dumps(sorted(songs, key=lambda x: (x['lastPracticed'], x['name'])))
+  return json.dumps(songs)
 
 
 @app.route('/move_to_current', methods=['POST'])
